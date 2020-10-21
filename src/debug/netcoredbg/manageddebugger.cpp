@@ -29,7 +29,7 @@ using std::map;
 
 #ifdef FEATURE_PAL
 #include <pthread.h>
-#include <link.h>
+#include <dlfcn.h>
 #include <sys/types.h>
 
 namespace {
@@ -43,7 +43,7 @@ private:
     static constexpr pid_t notConfigured = -1;
     pid_t trackPID = notConfigured;
     int exitCode = 0; // same behaviour as CoreCLR have, by default exit code is 0
-    pthread_mutex_t interlock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+    pthread_mutex_t interlock;
 
     class scope_guard
     {
@@ -56,6 +56,16 @@ private:
     };
 
 public:
+    waitpid_t()
+    {
+        pthread_mutexattr_t attr;
+        pthread_mutexattr_init(&attr);
+        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+        pthread_mutex_init(&interlock, &attr);
+    }
+
+    ~waitpid_t() {pthread_mutex_destroy(&interlock);}
+
     void init() noexcept
     {
         scope_guard lock(interlock);
@@ -512,7 +522,7 @@ public:
             if (stepForcedIgnoreBP())
             {
                 pAppDomain->Continue(0);
-                return S_OK;  
+                return S_OK;
             }
 
             ToRelease<ICorDebugAppDomain> callbackAppDomain(pAppDomain);
@@ -1116,7 +1126,7 @@ public:
         // ICorDebugManagedCallback3
 
         virtual HRESULT STDMETHODCALLTYPE CustomNotification(
-            /* [in] */ ICorDebugThread *pThread,  
+            /* [in] */ ICorDebugThread *pThread,
             /* [in] */ ICorDebugAppDomain *pAppDomain)
         {
             LogFuncEntry();
