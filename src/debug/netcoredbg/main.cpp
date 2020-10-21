@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
         InterpreterMI,
         InterpreterVSCode,
         InterpreterCLI
-    } interpreterType = InterpreterMI;
+    } interpreterType = InterpreterVSCode;
 
     bool engineLogging = false;
     std::string logFilePath;

@@ -160,12 +160,9 @@ void VSCodeProtocol::EmitStoppedEvent(StoppedEvent event)
     body["text"] = event.text;
     body["threadId"] = event.threadId;
     body["allThreadsStopped"] = event.allThreadsStopped;
-
-    // vsdbg shows additional info, but it is not a part of the protocol
-    // body["line"] = event.frame.line;
-    // body["column"] = event.frame.column;
-
-    // body["source"] = event.frame.source;
+    body["line"] = event.frame.line;
+    body["column"] = event.frame.column;
+    body["source"] = event.frame.source;
 
     EmitEvent("stopped", body);
 }
